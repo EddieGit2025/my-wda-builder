@@ -20,7 +20,7 @@ jobs:
                      -scheme WebDriverAgentRunner \
                      -sdk iphoneos \
                      -configuration Release \
-                     derivedDataPath Build
+                     -derivedDataPath Build
                      
       - name: 4. 將編譯出的 .app 打包成實體 .ipa
         run: |
