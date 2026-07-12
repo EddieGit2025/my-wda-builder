@@ -1,0 +1,36 @@
+name: Build WDA IPA
+on:
+  workflow_dispatch: # 允許手動點擊觸發
+
+jobs:
+  build-wda:
+    runs-on: macos-14 # 使用 GitHub 官方的 Mac 虛擬機
+    steps:
+      - name: 1. 複製 Appium WDA 最新原始碼
+        run: git clone https://github.com/appium/WebDriverAgent.git
+
+      - name: 2. 切換至 Xcode 編譯環境
+        run: sudo xcode-select -s /Applications/Xcode_15.4.app
+
+      - name: 3. 雲端編譯 WebDriverAgentRunner
+        run: |
+          cd WebDriverAgent
+          mkdir -p Build
+          xcodebuild -project WebDriverAgent.xcodeproj \
+                     -scheme WebDriverAgentRunner \
+                     -sdk iphoneos \
+                     -configuration Release \
+                     derivedDataPath Build
+                     
+      - name: 4. 將編譯出的 .app 打包成實體 .ipa
+        run: |
+          cd WebDriverAgent/Build/Build/Products/Release-iphoneos
+          mkdir Payload
+          cp -r WebDriverAgentRunner-Runner.app Payload/
+          zip -r WebDriverAgentRunner.ipa Payload
+
+      - name: 5. 上傳成品供本機下載
+        uses: actions/upload-artifact@v4
+        with:
+          name: wda-ipa
+          path: WebDriverAgent/Build/Build/Products/Release-iphoneos/WebDriverAgentRunner.ipa
